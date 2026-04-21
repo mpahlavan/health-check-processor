@@ -1,0 +1,14 @@
+.git
+.github
+.venv
+.mypy_cache
+.ruff_cache
+.pytest_cache
+__pycache__
+tests
+data
+*.csv
+*.md
+Makefile
+.pre-commit-config.yaml
+.python-version
