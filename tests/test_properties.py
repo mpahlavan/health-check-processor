@@ -3,9 +3,8 @@ from itertools import groupby
 from hypothesis import given
 from hypothesis import strategies as st
 
-from uptime.models import Ping, Status
-
 from conftest import process
+from uptime.models import Ping, Status
 
 # ---------------------------------------------------------------------------
 # Strategies

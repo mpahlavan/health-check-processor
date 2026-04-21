@@ -34,23 +34,25 @@ def collapse_to_intervals(pings: Iterable[Ping]) -> Iterator[Interval]:
     has end_time = -1 to signal it is still open.
     """
     current_status: Status | None = None
+    current_service_id: str = ""
     start_time: int = 0
 
     for ping in pings:
         if ping.status is not current_status:
             if current_status is not None:
                 yield Interval(
-                    service_id=ping.service_id,
+                    service_id=current_service_id,
                     start_time=start_time,
                     end_time=ping.timestamp,
                     status=current_status,
                 )
             current_status = ping.status
+            current_service_id = ping.service_id
             start_time = ping.timestamp
 
     if current_status is not None:
         yield Interval(
-            service_id=ping.service_id,  # type: ignore[possibly-undefined]
+            service_id=current_service_id,
             start_time=start_time,
             end_time=-1,
             status=current_status,

@@ -63,7 +63,9 @@ def read_pings(path: Path) -> Iterator[Ping]:
             try:
                 status = Status(raw_status)
             except ValueError:
-                logger.warning("line %d: unknown status %r — skipping", lineno, raw_status)
+                logger.warning(
+                    "line %d: unknown status %r — skipping", lineno, raw_status
+                )
                 rejected += 1
                 continue
 
@@ -71,7 +73,9 @@ def read_pings(path: Path) -> Iterator[Ping]:
             try:
                 timestamp = int(raw_ts)
             except ValueError:
-                logger.warning("line %d: invalid timestamp %r — skipping", lineno, raw_ts)
+                logger.warning(
+                    "line %d: invalid timestamp %r — skipping", lineno, raw_ts
+                )
                 rejected += 1
                 continue
 
@@ -92,28 +96,24 @@ def write_intervals(intervals: Iterable[Interval], path: Path | None) -> None:
     never leaves a partial output file.
     """
     header = ["service_id", "start_time", "end_time", "status"]
-
-    def _write(writer: "csv.writer") -> None:  # type: ignore[type-arg]
-        writer.writerow(header)
-        for interval in intervals:
-            writer.writerow(
-                [
-                    interval.service_id,
-                    interval.start_time,
-                    interval.end_time,
-                    interval.status.value,
-                ]
-            )
+    rows = [
+        [iv.service_id, iv.start_time, iv.end_time, iv.status.value]
+        for iv in intervals
+    ]
 
     if path is None:
-        _write(csv.writer(sys.stdout))
+        w = csv.writer(sys.stdout)
+        w.writerow(header)
+        w.writerows(rows)
         return
 
     tmp_fd, tmp_str = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
     tmp_path = Path(tmp_str)
     try:
         with open(tmp_fd, "w", newline="", encoding="utf-8") as fh:
-            _write(csv.writer(fh))
+            w = csv.writer(fh)
+            w.writerow(header)
+            w.writerows(rows)
         tmp_path.replace(path)  # atomic on POSIX; best-effort on Windows
     except Exception:
         tmp_path.unlink(missing_ok=True)

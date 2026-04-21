@@ -1,7 +1,6 @@
+from conftest import process
 from uptime.intervals import resolve_unknowns
 from uptime.models import Interval, Ping, Status
-
-from conftest import process
 
 # ---------------------------------------------------------------------------
 # Test data
