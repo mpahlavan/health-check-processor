@@ -35,5 +35,6 @@ dev = [
     "pytest-cov>=5.0",
     "hypothesis>=6.0",
     "mypy>=1.0",
+    "pre-commit>=3.0",
     "ruff>=0.4",
 ]
