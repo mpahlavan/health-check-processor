@@ -96,7 +96,7 @@ SAMPLE_INTERVALS = [
     Interval("1", 2000, -1, Status.DOWN),
 ]
 
-EXPECTED_CSV = "service_id,start_time,end_time,status\r\n1,1000,2000,UP\r\n1,2000,-1,DOWN\r\n"
+EXPECTED_CSV = "service_id,start_time,end_time,status\n1,1000,2000,UP\n1,2000,-1,DOWN\n"
 
 
 def test_write_to_file(tmp_path: Path) -> None:
