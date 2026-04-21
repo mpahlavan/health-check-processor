@@ -59,7 +59,8 @@ affecting others.
 - **DuckDB**: the same logic in SQL using `LAG`/`LEAD` window functions
   over a `GROUP BY service_id ORDER BY timestamp` partition. DuckDB's
   out-of-core operators handle datasets larger than RAM with no code
-  changes.
+  changes. A complete working equivalent is in
+  [`scripts/equivalent.sql`](scripts/equivalent.sql).
 - **PyArrow**: memory-mapped Parquet reads leverage the OS page cache —
   important on parallel file systems (Lustre, GPFS, BeeGFS) where
   many-small-file patterns saturate the metadata server.
