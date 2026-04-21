@@ -46,7 +46,46 @@ can detect services whose last known state is unresolved.
 
 ---
 
-## ADR-002: `service_id` as String
+## ADR-002: Local File vs S3 Streaming
+
+**Status:** Accepted
+
+### Context
+
+The input is described as coming from a relational database. In production
+the data could arrive as a local file, a network-mounted path, or a cloud
+object (S3, GCS, Azure Blob). The implementation must choose a boundary.
+
+### Options
+
+**Option A — Local file (current)**
+- Read from a path on disk passed via `--input`.
+- Pros: simple, debuggable, retry is independent of processing, works
+  offline, zero extra dependencies.
+- Cons: requires disk space equal to input size in the container; not
+  suitable for files that cannot be downloaded first.
+
+**Option B — Stream directly from S3 (boto3 + smart_open)**
+- Open the S3 URI directly as a file-like object.
+- Pros: no disk overhead, memory-bounded for any file size, natural fit
+  for ephemeral containers.
+- Cons: adds boto3/smart_open dependencies; complex error handling for
+  network interruptions mid-stream; needs IAM credentials at runtime.
+
+### Decision
+
+**Local file** (Option A) for this submission.
+
+The input is a single CSV provided with the task; the container is
+ephemeral; disk space is not a constraint. S3 streaming is the natural
+next step — the `read_pings(path: Path)` interface already accepts any
+`Path`-like object and the streaming iterator design means switching to
+`smart_open.open(s3_uri)` is a one-line change at the call site, with no
+changes to the core logic.
+
+---
+
+## ADR-003: `service_id` as String
 
 **Status:** Accepted
 
