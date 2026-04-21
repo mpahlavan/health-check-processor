@@ -1,10 +1,10 @@
-from itertools import groupby
-
-from uptime.intervals import collapse_to_intervals, resolve_unknowns
+from uptime.intervals import resolve_unknowns
 from uptime.models import Interval, Ping, Status
 
+from conftest import process
+
 # ---------------------------------------------------------------------------
-# Helpers
+# Test data
 # ---------------------------------------------------------------------------
 
 SAMPLE_PINGS = [
@@ -28,23 +28,13 @@ EXPECTED_INTERVALS = [
 ]
 
 
-def _process(pings: list[Ping]) -> list[Interval]:
-    """Minimal pipeline: sort → group → resolve → collapse → sort output."""
-    sorted_pings = sorted(pings, key=lambda p: (p.service_id, p.timestamp))
-    result: list[Interval] = []
-    for _, group in groupby(sorted_pings, key=lambda p: p.service_id):
-        resolved = resolve_unknowns(group)
-        result.extend(collapse_to_intervals(resolved))
-    return sorted(result, key=lambda i: (i.service_id, i.start_time))
-
-
 # ---------------------------------------------------------------------------
 # Golden test
 # ---------------------------------------------------------------------------
 
 
 def test_pdf_sample() -> None:
-    assert _process(SAMPLE_PINGS) == EXPECTED_INTERVALS
+    assert process(SAMPLE_PINGS) == EXPECTED_INTERVALS
 
 
 # ---------------------------------------------------------------------------
@@ -75,8 +65,7 @@ def test_leading_unknowns_resolve_to_next_status() -> None:
 
 def test_single_ping_gives_open_interval() -> None:
     pings = [Ping(1000, "svc", Status.UP)]
-    result = _process(pings)
-    assert result == [Interval("svc", 1000, -1, Status.UP)]
+    assert process(pings) == [Interval("svc", 1000, -1, Status.UP)]
 
 
 def test_all_unknown_service_produces_no_output() -> None:
@@ -84,11 +73,11 @@ def test_all_unknown_service_produces_no_output() -> None:
         Ping(1000, "svc", Status.UNKNOWN),
         Ping(2000, "svc", Status.UNKNOWN),
     ]
-    assert _process(pings) == []
+    assert process(pings) == []
 
 
 def test_empty_input() -> None:
-    assert _process([]) == []
+    assert process([]) == []
 
 
 def test_consecutive_same_status_is_one_interval() -> None:
@@ -97,5 +86,4 @@ def test_consecutive_same_status_is_one_interval() -> None:
         Ping(2000, "svc", Status.UP),
         Ping(3000, "svc", Status.UP),
     ]
-    result = _process(pings)
-    assert result == [Interval("svc", 1000, -1, Status.UP)]
+    assert process(pings) == [Interval("svc", 1000, -1, Status.UP)]
