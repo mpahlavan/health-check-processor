@@ -27,6 +27,13 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="print per-service uptime metrics to stderr",
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="increase log verbosity (-v WARNING, -vv INFO, -vvv DEBUG)",
+    )
     return parser
 
 
@@ -39,11 +46,15 @@ def _pipeline(pings: list[Ping]) -> list[Interval]:
     return sorted(result, key=lambda i: (i.service_id, i.start_time))
 
 
-def main() -> None:
-    logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
+_VERBOSITY = {0: logging.WARNING, 1: logging.WARNING, 2: logging.INFO, 3: logging.DEBUG}
 
+
+def main() -> None:
     parser = _build_parser()
     args = parser.parse_args()
+
+    level = _VERBOSITY.get(args.verbose, logging.DEBUG)
+    logging.basicConfig(level=level, format="%(levelname)s: %(message)s")
 
     input_path = Path(args.input)
     output_path = Path(args.output) if args.output else None
